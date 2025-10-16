@@ -140,7 +140,7 @@ function buildWfsUrl(geoserverUrl, workspace, layerName, maxFeatures = 1000) {
   return url.toString();
 }
 
-async function getPublishedShapeWfsUrls({ geoserverUrl, workspace, username, password }) {
+async function getPublishedShapeWfsUrls({ geoserverUrl, workspace, username, password, maxFeatures = 1000 }) {
   const authHeader = buildAuthHeader(username, password);
   const featureTypes = await fetchFeatureTypes({ geoserverUrl, workspace, authHeader });
 
@@ -150,7 +150,7 @@ async function getPublishedShapeWfsUrls({ geoserverUrl, workspace, username, pas
     const layerId = `${workspace}:${layerName}`;
     return {
       layer: layerId,
-      wfsUrl: buildWfsUrl(geoserverUrl, workspace, layerName),
+      wfsUrl: buildWfsUrl(geoserverUrl, workspace, layerName, maxFeatures),
       title,
     };
   });
@@ -162,23 +162,46 @@ async function main() {
     const entries = await getPublishedShapeWfsUrls(options);
 
     if (entries.length === 0) {
-      console.log(`Workspace "${options.workspace}" has no published feature types.`);
+      if (options.pretty) {
+        console.log(JSON.stringify({
+          success: true,
+          message: `Workspace "${options.workspace}" has no published feature types.`,
+          data: []
+        }, null, 2));
+      } else {
+        console.log(JSON.stringify({
+          success: true,
+          message: `Workspace "${options.workspace}" has no published feature types.`,
+          data: []
+        }));
+      }
       return;
     }
+
+    const result = {
+      success: true,
+      count: entries.length,
+      message: `Found ${entries.length} published feature type(s)`,
+      data: entries
+    };
 
     if (options.pretty) {
-      console.log(JSON.stringify(entries, null, 2));
-      return;
-    }
-
-    console.log(`Found ${entries.length} published feature type(s):`);
-    for (const entry of entries) {
-      const titleSuffix = entry.title ? ` (title: ${entry.title})` : '';
-      console.log(`- ${entry.layer}${titleSuffix}`);
-      console.log(`  WFS: ${entry.wfsUrl}`);
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.log(JSON.stringify(result));
     }
   } catch (error) {
-    console.error(error.message);
+    const errorResult = {
+      success: false,
+      error: error.message,
+      data: null
+    };
+
+    if (options.pretty) {
+      console.log(JSON.stringify(errorResult, null, 2));
+    } else {
+      console.log(JSON.stringify(errorResult));
+    }
     process.exitCode = 1;
   }
 }
@@ -189,4 +212,5 @@ if (require.main === module) {
 
 module.exports = {
   getPublishedShapeWfsUrls,
+  buildWfsUrl,
 };

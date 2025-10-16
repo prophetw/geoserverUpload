@@ -35,7 +35,18 @@ node batchPublish.js
 
 脚本会为每个 `.shp` 找出同名的支持文件，压缩后上传至 `/rest/workspaces/{workspace}/datastores/{store}/file.shp?charset=UTF-8`，随后调用 `featuretypes` 接口发布并执行 `recalculate=nativebbox,latlonbbox` 以从原生数据计算边界。
 
-## 查询 wfs url 
+## 查询 wfs url
 ```bash
-node listWfsUrls.js --geoserver-url <url> --workspace <ws> --username <user> --password <pass> [--pretty]
+node listWfsUrls.js --geoserver-url <url> --workspace <ws> --username <user> --password <pass> [--pretty] [--max-features <count>]
+
+
+  # 使用默认1000条
+  node listWfsUrls.js --geoserver-url http://192.168.99.57:18080/geoserver --workspace my_workspace --username admin --password bim%2018
+  # 自定义5000条
+  node listWfsUrls.js --geoserver-url http://192.168.99.57:18080/geoserver --workspace my_workspace --username admin --password bim%2018 --max-features 5000
+
+  node listWfsUrls.js --geoserver-url https://szsp.suitbim.com.cn:7300/geoserver --workspace my_workspace --username admin --password bim%2018 --max-features 5000
 ```
+
+**参数说明：**
+- `--max-features`：设置WFS查询返回的最大特征数（默认1000条，如果不设置则使用GeoServer默认值500条）
