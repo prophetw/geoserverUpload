@@ -604,9 +604,12 @@ function renderWfsResult(payload) {
     urlCell.className = 'wfs-url';
     urlCell.textContent = entry.wfsUrl;
     const actionCell = document.createElement('td');
-    actionCell.className = 'wfs-actions';
-    actionCell.appendChild(copyButton);
-    actionCell.appendChild(kmlButton);
+    actionCell.className = 'wfs-actions-cell';
+    const actionInner = document.createElement('div');
+    actionInner.className = 'wfs-actions';
+    actionInner.appendChild(copyButton);
+    actionInner.appendChild(kmlButton);
+    actionCell.appendChild(actionInner);
 
     tr.append(layerCell, titleCell, urlCell, actionCell);
     tbody.appendChild(tr);
