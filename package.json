@@ -1,0 +1,13 @@
+{
+  "name": "geoserver-upload-ui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GeoServer shapefile publish UI",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "ui": "node server.js",
+    "publish": "node batchPublish.js",
+    "wfs": "node listWfsUrls.js"
+  }
+}

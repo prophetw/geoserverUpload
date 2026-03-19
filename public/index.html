@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GeoServer Upload Console</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">GeoServer Publish Console</p>
+          <h1>把命令行发布流程整理成可保存配置的前端界面</h1>
+          <p class="hero-text">
+            连接信息保存在当前浏览器的 <code>localStorage</code>。上传区会自动按同名文件分组，校验
+            <code>.shp</code>、<code>.shx</code>、<code>.dbf</code> 是否齐全，再发到 GeoServer。
+          </p>
+        </div>
+        <div class="hero-panel">
+          <div class="hero-stat">
+            <span>保存配置</span>
+            <strong id="profileCount">0</strong>
+          </div>
+          <div class="hero-stat">
+            <span>必需文件</span>
+            <strong id="requiredSuffixes">.shp / .shx / .dbf</strong>
+          </div>
+          <div class="hero-stat">
+            <span>固定编码</span>
+            <strong>UTF-8</strong>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="panel connection-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Connection</p>
+              <h2>连接配置</h2>
+            </div>
+            <span class="panel-badge">localStorage</span>
+          </div>
+
+          <div class="field-row">
+            <label class="field">
+              <span>已保存配置</span>
+              <select id="profileSelect"></select>
+            </label>
+          </div>
+
+          <div class="field-grid">
+            <label class="field">
+              <span>配置名称</span>
+              <input id="profileName" type="text" placeholder="例如：内网 GeoServer" />
+            </label>
+            <label class="field field-span-2">
+              <span>GeoServer Base URL</span>
+              <input id="geoserverUrl" type="url" placeholder="http://127.0.0.1:8080/geoserver" />
+            </label>
+            <label class="field">
+              <span>Workspace</span>
+              <input id="workspace" type="text" placeholder="my_workspace" />
+            </label>
+            <label class="field">
+              <span>Username</span>
+              <input id="username" type="text" placeholder="admin" />
+            </label>
+            <label class="field">
+              <span>Password</span>
+              <input id="password" type="password" placeholder="输入 GeoServer 密码" />
+            </label>
+          </div>
+
+          <div class="button-row">
+            <button id="saveProfileButton" class="button button-primary" type="button">保存当前配置</button>
+            <button id="newProfileButton" class="button" type="button">新建空白配置</button>
+            <button id="deleteProfileButton" class="button button-danger" type="button">删除当前配置</button>
+          </div>
+
+          <p class="panel-note">
+            Base URL、Workspace、用户名和密码都只保存在本机浏览器，不会写入仓库文件。
+          </p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Publish</p>
+              <h2>上传并发布 Shapefile</h2>
+            </div>
+            <span class="panel-badge" id="groupCountBadge">0 组</span>
+          </div>
+
+          <div class="field-grid publish-options">
+            <label class="field">
+              <span>Store 前缀</span>
+              <input id="storePrefix" type="text" placeholder="可选，例如 store_" />
+            </label>
+            <label class="field">
+              <span>Layer 前缀</span>
+              <input id="layerPrefix" type="text" placeholder="可选，例如 layer_" />
+            </label>
+            <label class="field field-checkbox">
+              <span>覆盖已有图层</span>
+              <input id="overwrite" type="checkbox" />
+            </label>
+          </div>
+
+          <div id="dropzone" class="dropzone" tabindex="0">
+            <div class="dropzone-copy">
+              <p class="dropzone-title">拖入 `.shp/.shx/.dbf/.prj/.cpg...` 文件，或直接选择文件夹</p>
+              <p class="dropzone-text">
+                同名文件会自动归并成一个图层组。支持多次添加，界面会自动合并。
+              </p>
+            </div>
+            <div class="button-row">
+              <button id="pickFilesButton" class="button button-primary" type="button">选择多个文件</button>
+              <button id="pickFolderButton" class="button" type="button">选择目录</button>
+              <button id="clearFilesButton" class="button button-danger" type="button">清空当前文件</button>
+            </div>
+            <input id="fileInput" type="file" multiple hidden />
+            <input id="folderInput" type="file" webkitdirectory directory multiple hidden />
+          </div>
+
+          <div id="uploadSummary" class="summary-strip">
+            <span>尚未选择文件</span>
+          </div>
+
+          <div id="groupList" class="group-list"></div>
+
+          <div class="button-row">
+            <button id="publishButton" class="button button-primary" type="button">开始发布</button>
+          </div>
+
+          <div id="publishResult" class="result-panel" hidden></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">WFS</p>
+              <h2>查询已发布图层的 WFS URL</h2>
+            </div>
+            <span class="panel-badge">Workspace 级查询</span>
+          </div>
+
+          <div class="field-grid">
+            <label class="field">
+              <span>maxFeatures</span>
+              <input id="maxFeatures" type="number" min="1" step="1" value="5000" />
+            </label>
+          </div>
+
+          <div class="button-row">
+            <button id="queryWfsButton" class="button button-primary" type="button">查询 WFS URL</button>
+          </div>
+
+          <div id="wfsResult" class="result-panel" hidden></div>
+        </section>
+      </main>
+    </div>
+
+    <template id="groupTemplate">
+      <article class="group-card">
+        <div class="group-head">
+          <div>
+            <h3 class="group-title"></h3>
+            <p class="group-meta"></p>
+          </div>
+          <span class="status-chip"></span>
+        </div>
+        <div class="file-chip-list"></div>
+        <div class="field-grid compact-grid">
+          <label class="field">
+            <span>Store 名称</span>
+            <input class="group-input" data-field="storeName" type="text" />
+          </label>
+          <label class="field">
+            <span>Layer 名称</span>
+            <input class="group-input" data-field="layerName" type="text" />
+          </label>
+        </div>
+      </article>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
