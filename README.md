@@ -14,7 +14,7 @@ node batchPublish.js \
   --geoserver-url http://192.168.99.57:18080/geoserver \
   --workspace my_workspace \
   --username admin \
-  --password bim%2018 \
+  --password '<password>' \
   --directory ./test
 ```
 
@@ -23,7 +23,7 @@ node batchPublish.js \
 export GEOSERVER_URL=http://192.168.99.57:18080/geoserver
 export GEOSERVER_WORKSPACE=my_workspace
 export GEOSERVER_USER=admin
-export GEOSERVER_PASSWORD=bim%2018
+export GEOSERVER_PASSWORD='<password>'
 node batchPublish.js
 ```
 
@@ -41,12 +41,13 @@ node listWfsUrls.js --geoserver-url <url> --workspace <ws> --username <user> --p
 
 
   # 使用默认1000条
-  node listWfsUrls.js --geoserver-url http://192.168.99.57:18080/geoserver --workspace my_workspace --username admin --password bim%2018
+  node listWfsUrls.js --geoserver-url http://192.168.99.57:18080/geoserver --workspace my_workspace --username admin --password '<password>'
   # 自定义5000条
-  node listWfsUrls.js --geoserver-url http://192.168.99.57:18080/geoserver --workspace my_workspace --username admin --password bim%2018 --max-features 5000
+  node listWfsUrls.js --geoserver-url http://192.168.99.57:18080/geoserver --workspace my_workspace --username admin --password '<password>' --max-features 5000
 
-  node listWfsUrls.js --geoserver-url https://szsp.suitbim.com.cn:7300/geoserver --workspace my_workspace --username admin --password bim%2018 --max-features 5000
+  node listWfsUrls.js --geoserver-url https://szsp.suitbim.com.cn:7300/geoserver --workspace my_workspace --username admin --password 'geoserver' --max-features 5000
 ```
 
 **参数说明：**
 - `--max-features`：设置WFS查询返回的最大特征数（默认1000条，如果不设置则使用GeoServer默认值500条）
+- `--password`：传原始密码，不要写 URL 编码；如果密码里有空格或特殊字符，请用引号包起来。
